@@ -5,7 +5,14 @@
 
 double calc(uint32_t x_last, uint32_t num_threads)
 {
-  return 0;
+    double res = 0;
+#pragma omp parallel for num_threads(num_threads) reduction(+:res)
+    {
+        for(int i = x_last; i > 0; i--){
+            res += 1/(double)i;
+        }
+    }
+    return res;
 }
 
 int main(int argc, char** argv)
