@@ -3,9 +3,23 @@
 #include <fstream>
 #include <omp.h>
 
-double calc(uint32_t x_last, uint32_t num_threads)
-{
-  return 0;
+double calc(uint32_t x_last, uint32_t num_threads) {
+    int fct = 1;
+    double *facts = (double *) malloc(sizeof(double) * x_last);
+    facts[0] = 1;
+    for (uint32_t i = 1; i <= x_last; i++) {
+        fct *= i;
+        facts[i] = fct;
+    }
+    double res = 0;
+#pragma omp parallel for num_threads(num_threads) reduction(+:res)
+    {
+        for (uint32_t i = x_last - 1; i >= 0; i--) {
+            res += 1 / (double) facts[i];
+        }
+    }
+    free(facts);
+    return res;
 }
 
 int main(int argc, char** argv)

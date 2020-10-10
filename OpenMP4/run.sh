@@ -1,7 +1,7 @@
 #! /bin/bash
 # run.sh <number of repetitions>
 compiler="g++"
-flags="-fopenmp -std=c++11 -Wall -Wextra -Werror"
+flags="-Xclang -fopenmp -std=c++11 -Wall -Wextra -Werror -lomp"
 src="./src/main.cpp"
 build="./build"
 exe="$build/task"
@@ -29,9 +29,9 @@ for test_dir in $tests_dir/*; do
   test=$(basename $test_dir)
   printf "\n[TEST $test]\n"
   echo "  $exe $test_dir/input.txt $build/$test.txt"
-  START=$(date +%s%N)
+  START=$(gdate +%s%N)
   $exe $test_dir/input.txt $build/$test.txt
-  END=$(date +%s%N)
+  END=$(gdate +%s%N)
   DIFF=$((($END - $START)/1000000))
   if [ ! $? -eq 0 ]; then
     echo "[TEST $test] RUNTIME FAIL"
@@ -42,9 +42,9 @@ for test_dir in $tests_dir/*; do
     RES="OK"
     if [ -n "$1" ]; then
       for ((i=1; i < $1; i++)); do
-        START=$(date +%s%N)
+        START=$(gdate +%s%N)
         $exe $test_dir/input.txt $build/${test}_$i.txt
-        END=$(date +%s%N)
+        END=$(gdate +%s%N)
         DIFF=$(($DIFF + ($END - $START)/1000000))
         if ! cmp -s $build/${test}_$i.txt $test_dir/output.txt; then
           RES="FAIL"
