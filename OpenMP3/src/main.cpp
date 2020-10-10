@@ -9,9 +9,27 @@ double func(double x)
   return sin(x);
 }
 
-double calc(double x0, double x1, double dx, uint32_t num_threads)
-{
-  return 0;
+double calc_chunk(double a, double b, double dx) {
+    double res = 0;
+    double i = a;
+    while (i < b) {
+        double x = i + dx / 2;
+        res += dx * func(x);
+        i += dx;
+    }
+    return res;
+}
+
+double calc(double x0, double x1, double dx, uint32_t num_threads) {
+    double dx_thread = (x1 - x0) / num_threads;
+    double res = 0;
+#pragma omp parallel for num_threads(num_threads) reduction(+:res)
+    {
+        for (uint32_t i = 0; i < num_threads; i++) {
+            res += calc_chunk(x0 + i * dx_thread, x0 + (i + 1) * dx_thread, dx);
+        }
+    }
+    return round(res);
 }
 
 int main(int argc, char** argv)
