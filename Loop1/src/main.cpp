@@ -7,15 +7,32 @@
 
 void calc(double* arr, uint32_t ySize, uint32_t xSize, int rank, int size)
 {
-  if (rank == 0 && size > 0)
+  if (size > 0)
   {
-    for (uint32_t y = 0; y < ySize; y++)
-    {
-      for (uint32_t x = 0; x < xSize; x++)
-      {
-        arr[y*xSize + x] = sin(0.00001*arr[y*xSize + x]);
+      MPI_Bcast(&ySize, 1, MPI_INT, 0, MPI_COMM_WORLD);
+      MPI_Bcast(&xSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+      unsigned int numCount = ySize * xSize;
+      unsigned int pSize = numCount/size;
+      double* pArr = (double *)malloc(pSize * sizeof(double));
+      MPI_Scatter(arr, pSize, MPI_DOUBLE,
+                  pArr, pSize, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+      for(unsigned int i = 0; i < pSize; i++) {
+          pArr[i] = sin(0.00001*pArr[i]);
       }
-    }
+
+      MPI_Gather(pArr, pSize, MPI_DOUBLE,
+                 arr, pSize, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+      if (rank == 0 && numCount % size > 0) {
+          //если нацело распараллелить не удается, то досчитываем последний столбец
+          for(unsigned int i = pSize * size; i < numCount; i++) {
+              arr[i] = sin(0.00001*arr[i]);
+          }
+      }
+
+      free(pArr);
   }
 }
 

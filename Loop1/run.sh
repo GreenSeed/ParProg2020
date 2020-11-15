@@ -1,7 +1,7 @@
 #! /bin/bash
 # run.sh <number of repetitions>
 compiler="mpic++"
-flags="-std=c++11 -Wall -Wextra -Werror"
+flags="-Xclang -std=c++11 -Wall -Wextra -Werror"
 src="./src/main.cpp"
 build="./build"
 exe="$build/task"
@@ -30,9 +30,9 @@ for test_dir in $tests_dir/*; do
     test="$(basename $test_dir)_p$proc"
     printf "\n[TEST $test]\n"
     echo "mpiexec -np $proc $exe $test_dir/input.txt $build/$test.txt"
-    START=$(date +%s%N)
+    START=$(gdate +%s%N)
     mpiexec -np $proc $exe $test_dir/input.txt $build/$test.txt
-    END=$(date +%s%N)
+    END=$(gdate +%s%N)
     DIFF=$((($END - $START)/1000000))
     if [ ! $? -eq 0 ]; then
       echo "[TEST $test] RUNTIME FAIL"
